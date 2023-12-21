@@ -1,11 +1,11 @@
-package com.ll.domain.book.book.entity;
+package com.ll.domain.product.product.entity;
 
+import com.ll.domain.book.book.entity.Book;
 import com.ll.domain.member.member.entity.Member;
-import com.ll.domain.product.product.entity.Product;
+import com.ll.global.app.AppConfig;
 import com.ll.global.jpa.BaseEntity;
 import jakarta.persistence.Entity;
 import jakarta.persistence.ManyToOne;
-import jakarta.persistence.OneToOne;
 import lombok.*;
 
 import static lombok.AccessLevel.PROTECTED;
@@ -17,12 +17,15 @@ import static lombok.AccessLevel.PROTECTED;
 @Setter
 @Getter
 @ToString(callSuper = true)
-public class Book extends BaseEntity {
-    @OneToOne
-    private Product product;
+public class Product extends BaseEntity {
     @ManyToOne
-    private Member author;
-    private String title;
-    private String body;
+    private Member maker;
+    private String relTypeCode;
+    private long relId;
+    private String name;
     private int price;
+
+    public Book getBook() {
+        return AppConfig.getEntityManager().getReference(Book.class, relId);
+    }
 }
