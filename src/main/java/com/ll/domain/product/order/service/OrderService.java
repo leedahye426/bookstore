@@ -71,4 +71,38 @@ public class OrderService {
         order.setCancelDone();
         order.setRefundDone();
     }
+
+    public void checkCanPrice(Order order, int pgPayPrice) {
+        if(!canPay(order, pgPayPrice)) {
+            throw new GlobalException("400-2", "PG예치금이 부족하여 결제할 수 없습니다.");
+        }
+    }
+
+    public boolean canPay(Order order, int pgPayPrice) {
+        long restCash = order.getBuyer().getRestCash();
+
+        return order.calcPayPrice() <= restCash + pgPayPrice;
+    }
+
+    @Transactional
+    public void payByTossPayments(Order order, long pgPayPrice) {
+        Member buyer = order.getBuyer();
+        long restCash = buyer.getRestCash(); //잔여 캐시
+        long payPrice = order.calcPayPrice(); // 주문 금액
+
+        long useRestCash = payPrice - pgPayPrice;
+
+        memberService.addCash(buyer, pgPayPrice, CashLog.EvenType.충전__토스페이먼츠, order);
+        memberService.addCash(buyer, pgPayPrice * -1, CashLog.EvenType.사용__토스페이먼츠_주문결제, order);
+
+        if (useRestCash > 0) {
+            if (useRestCash > restCash) {
+                throw new RuntimeException("예치금이 부족합니다.");
+            }
+
+            memberService.addCash(buyer, useRestCash * -1, CashLog.EvenType.사용__예치금_주문결제, order);
+        }
+
+        payDone(order);
+    }
 }

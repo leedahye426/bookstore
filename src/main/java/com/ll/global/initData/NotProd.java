@@ -84,5 +84,12 @@ public class NotProd {
         Order order2 = orderService.createFromCart(memberUser3);
         orderService.payByCashOnly(order2);
         orderService.refund(order2);
+
+        memberService.addCash(memberUser2, 150_000, CashLog.EvenType.충전__무통장입금, memberUser2);
+
+        Order order3 = orderService.createFromCart(memberUser2);
+        orderService.checkCanPrice(order3, 85_000);
+
+        orderService.payByTossPayments(order3, 55_000);
     }
 }
